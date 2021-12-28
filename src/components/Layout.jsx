@@ -1,3 +1,4 @@
+import Footer from "./Footer";
 import Navigation from "./Navigation";
 
 export default function Layout(props) {
@@ -5,6 +6,7 @@ export default function Layout(props) {
     <>
       {/* <Navigation /> */}
       <main className="bg-gray-p">{props.children}</main>
+      <Footer />
     </>
   );
 }

@@ -1,77 +1,171 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import FacebookIcon from "@mui/icons-material/Facebook";
+
+import { signIn, signUp } from "../actions/auth";
+import useInput from "../hooks/useInput";
 import Button from "../components/UI/Button";
 import Input from "../components/UI/Input";
 
 export default function SignIn() {
-  const [focus, setFocus] = useState(false);
-  const onFocus = () => {
-    setFocus((prev) => !prev);
+  const [isSignIn, setIsnSignIn] = useState(true);
+
+  const state = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const isNotEmpty = (value) => value.trim().length > 0;
+  const isLengthEight = (value) => value.trim().length > 7;
+
+  const validateEmail = (value) =>
+    value.includes("@") &&
+    value.includes(".") &&
+    value.length > 2 &&
+    value.split("").indexOf("@") > 0;
+
+  const {
+    value: enteredUsername,
+    hasError: usernameHasError,
+    isValid: usernameValid,
+    valueChangeHandler: usernameChangeHandler,
+    inputBlurHandler: usernameBlurHandler,
+    reset: usernameReset,
+  } = useInput(isNotEmpty);
+  const {
+    value: enteredEmail,
+    hasError: emailHasError,
+    isValid: emailValid,
+    valueChangeHandler: emailChangeHandler,
+    inputBlurHandler: emailBlurHandler,
+    reset: emailReset,
+  } = useInput(validateEmail);
+  const {
+    value: enteredPassword,
+    hasError: passwordHasError,
+    isValid: passwordValid,
+    valueChangeHandler: passwordChangeHandler,
+    inputBlurHandler: passswordBlurHandler,
+    reset: passwordReset,
+  } = useInput(isLengthEight);
+
+  let formIsValid = false;
+  if (passwordValid && emailValid) {
+    formIsValid = true;
+  }
+
+  const onSubmitHandler = async (event) => {
+    event.preventDefault();
+
+    if (!formIsValid) return;
+
+    const formData = {
+      username: enteredUsername,
+      email: enteredEmail,
+      password: enteredPassword,
+    };
+    if (isSignIn) {
+      dispatch(signIn(formData, navigate));
+    } else {
+      dispatch(signUp(formData, navigate));
+    }
+    // passwordReset();
+    // emailReset();
   };
-  const onBlur = () => {
-    setFocus((prev) => !prev);
-  };
-  const [isValid, setIsValid] = useState({
-    email: true,
-    password: true,
-  });
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const Divider = () => (
+    <div className="py-4 flex justify-center items-center">
+      <span className="bg-gray-200 h-[1px] w-full" />
+      <h4 className="text-xs text-gray-500 px-4">OR</h4>
+      <span className="bg-gray-200 h-[1px] w-full" />
+    </div>
+  );
 
-  const handleInput = (e) => {
-    setFormData((prev) => {
-      return { ...prev, [e.target.name]: e.target.value };
-    });
-  };
+  const LoginFacebook = () => (
+    <a
+      href="#"
+      className={`flex text-sm justify-center gap-2 ${
+        isSignIn ? "text-blue-800" : "text-white bg-blue-500 py-1 rounded"
+      }`}
+    >
+      <FacebookIcon sx={{ fontSize: 18 }} />
+      <h4>Log in with Facebook</h4>
+    </a>
+  );
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // const reg = "/S+@S+.S+/".test(FormData.email);
-
-    // if (!reg)
-    //   setIsValid((prev) => {
-    //     return { ...prev, email: false };
-    //   });
-    if (formData.password.length < 7)
-      return setIsValid((prev) => {
-        return { ...prev, password: false };
-      });
-
-    console.log(formData);
-  };
   return (
     <main className="mx-auto max-w-[350px] pt-3">
-      <article className="bg-white mt-10 border-1 border border-gray-s ">
-        <h1 className="py-8 text-center text-4xl font-semibold font-ob">
-          Instagram
-        </h1>
-        <form onSubmit={handleSubmit} className="px-10 flex flex-col">
+      <article className="sm:bg-white mt-10 sm:border border-gray-s px-10">
+        <h1 className="py-6 text-center text-4xl font-semibold">Instagram</h1>
+        {!isSignIn && (
+          <>
+            <h2 className="text-base text-gray-400 font-semibold text-center pb-4">
+              Sign up to see photos and videos from your friends.
+            </h2>
+            <LoginFacebook />
+            <Divider />
+          </>
+        )}
+        <form onSubmit={onSubmitHandler} className="flex flex-col">
+          {!isSignIn && (
+            <Input
+              errorMessage={usernameHasError && "Username must not empty!"}
+              placeholder="username"
+              handleInput={usernameChangeHandler}
+              type="text"
+              onBlur={usernameBlurHandler}
+              value={enteredUsername}
+            />
+          )}
           <Input
+            errorMessage={emailHasError && "invalid format email!"}
             placeholder="email"
-            value={formData.email}
-            handleInput={handleInput}
+            handleInput={emailChangeHandler}
             type="email"
+            onBlur={emailBlurHandler}
+            value={enteredEmail}
           />
           <Input
-            className="my-2"
+            errorMessage={passwordHasError && "password too short!"}
             placeholder="password"
-            value={formData.password}
-            handleInput={handleInput}
+            handleInput={passwordChangeHandler}
             type="password"
+            onBlur={passswordBlurHandler}
+            value={enteredPassword}
           />
-          <Button title="Log in" />
-          <a href="#" className="text-xs text-gray-500 text-center py-5">
-            Forgot password?
-          </a>
+          <Button
+            title={isSignIn ? "Log in" : "Sign Up"}
+            disable={!formIsValid}
+          />
+          {!isSignIn && (
+            <a className="text-xs text-gray-400 text-center pt-4 pb-7 px-2">
+              By signing up, you agree to our Terms , Data Policy and Cookies
+              Policy .
+            </a>
+          )}
+          {isSignIn && <Divider />}
+          {isSignIn && <LoginFacebook />}
+          {state.error && (
+            <h5 className="text-red-600 text-xs pt-4 text-center">
+              {state.error}
+            </h5>
+          )}
+          {isSignIn && (
+            <a href="#" className="text-xs text-blue-900 text-center py-5">
+              Forgot password?
+            </a>
+          )}
         </form>
       </article>
 
-      <section className="bg-white flex justify-center border border-gray-s py-4 mt-2">
-        <h4>Don't have an account? </h4>
-        <a href="#" className="text-blue-600 font-semibold ml-1">
-          Sign up
+      <section className="sm:bg-white flex justify-center sm:border border-gray-s py-4 mt-2">
+        <h4>{isSignIn ? "Don't have an account?" : "Have an account?"} </h4>
+        <a
+          href="#"
+          onClick={() => setIsnSignIn((prev) => !prev)}
+          className="text-blue-600 font-semibold ml-1"
+        >
+          {isSignIn ? "Sign up" : "Log In"}
         </a>
       </section>
 

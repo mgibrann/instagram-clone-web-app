@@ -8,19 +8,24 @@ export default function Input({
   className,
   onFocus,
   onBlur,
+  errorMessage,
 }) {
   return (
-    <div className={`border border-gray-s p-2 rounded ` + className}>
+    <>
       <input
         placeholder={placeholder}
         type={type}
         name={type}
         onChange={handleInput}
         value={value}
-        className="outline-none text-sm w-full"
+        className={
+          `outline-none text-sm w-full bg-gray-100 border border-gray-s p-2 rounded transition duration-500 focus:border-gray-500 ` +
+          className
+        }
         onFocus={onFocus}
         onBlur={onBlur}
       />
-    </div>
+      <p className="text-[10px] text-red-600 pb-2">{errorMessage}</p>
+    </>
   );
 }

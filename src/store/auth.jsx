@@ -2,10 +2,21 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const authStore = createSlice({
   name: "auth",
-  initialState: { profile: null },
+  initialState: { profile: null, error: null, token: null },
   reducers: {
-    signin(state, action) {},
-    signup(state, action) {},
+    signin(state, action) {
+      localStorage.setItem("profile", JSON.stringify(action.payload));
+      state.profile = action.payload.profile;
+      state.token = action.payload.token;
+    },
+    signup(state, action) {
+      localStorage.setItem("profile", JSON.stringify(action.payload));
+      state.profile = action.payload.token;
+      state.token = action.payload.token;
+    },
+    error(state, action) {
+      state.error = action.payload;
+    },
   },
 });
 
